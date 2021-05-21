@@ -1,4 +1,4 @@
-#################### Terrafrom Config #######################
+#################### Terraform Config #######################
 
 terraform{
     required_providers{
@@ -47,28 +47,28 @@ data "azurerm_role_definition" "builtin" {
 #############################################################
 
 #################### Resource ###############################
-resource "azuread_application" "agent" {
-  display_name = "terrafrom-application"
+resource "azuread_application" "tf_app" {
+  display_name = "terraform-application"
 }
 
-resource "azuread_service_principal" "agent" {
-  application_id = azuread_application.agent.application_id
+resource "azuread_service_principal" "tf_spn" {
+  application_id = azuread_application.tf_app.application_id
 }
 
-resource "azuread_service_principal_password" "agent" {
-  service_principal_id = azuread_service_principal.agent.id
-  value                = "bd018069-622d-4b46-bcb9-2bbee49fe7d9"
-  end_date             = "2022-01-01T01:02:03Z"
+resource "azuread_service_principal_password" "tf_credential" {
+  service_principal_id = azuread_service_principal.tf_spn.id
+  value                = var.tf_spn_secret
+  end_date             = var.tf_spn_secret_validity
 }
 
-resource "azurerm_role_assignment" "terrafrom" {
+resource "azurerm_role_assignment" "tf_rbac" {
   scope              = data.azurerm_subscription.current.id
   role_definition_id = data.azurerm_role_definition.builtin.id
   principal_id       = azuread_service_principal.agent.id
 }
 
-resource "azurerm_resource_group" "resourceGroup" {
-  name = "terrafromRG"
-  location = "westus"
+resource "azurerm_resource_group" "project_rg" {
+  name = "PheonixProject"
+  location = "westeurope"
 }
 #############################################################
