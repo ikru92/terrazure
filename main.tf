@@ -22,26 +22,21 @@ provider "azurerm"{
 }
 
 provider "azuread"{
-
 }
 
 #################### Data Soruce ############################
 
-data "azurerm_subscription" "current" {
+data "azurerm_client_config" "current_" {   
 }
 
 data "azurerm_role_definition" "builtin" {
   name = "Contributor"
 }
-data "azurerm_storage_account" "access_key" {
-  name                = azurerm_storage_account.tf_backend.name
-  resource_group_name = azurerm_resource_group.tf_backend_rg.name
-}
-
 
 #############################################################
 
 #################### Resource ###############################
+
 resource "azuread_application" "tf_app" {
   display_name = "terraform-application"
 }
@@ -57,14 +52,14 @@ resource "azuread_service_principal_password" "tf_credential" {
 }
 
 resource "azurerm_role_assignment" "tf_rbac" {
-  scope              = data.azurerm_subscription.current.id
+  scope              = data.azurerm_client_config.current.subscription_id
   role_definition_id = data.azurerm_role_definition.builtin.id
   principal_id       = azuread_service_principal.tf_spn.id
 }
 
 resource "azurerm_resource_group" "tf_backend_rg" {
-  name = "InfraStateRG"
-  location = "westeurope"
+  name      = "InfraStateRG"
+  location  = "westeurope"
 }
 
 resource "azurerm_storage_account" "tf_backend" {
@@ -80,11 +75,17 @@ resource "azurerm_storage_container" "tf_backend_contianer" {
   storage_account_name  = azurerm_storage_account.tf_backend.name
   container_access_type = "private"
 }
+
 #############################################################
 
 #################### Output #################################
-output "storage_access_key"{
-    value = data.azurerm_storage_account.access_key.primary_access_key
-    sensitive = true
+
+output "username"{
+    value = azuread_service_principal.tf_spn.id
 } 
+
+output "tenant_id"{
+    value = data.azurerm_client_config.current.tenant_id
+} 
+
 ##############################################################
