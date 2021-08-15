@@ -7,4 +7,3 @@
 - Add the RBAC roles to the Service Principal Object
 - Create a resource group for the remote backend storage
 - Create the storage account
-- Create a storage account for the remote state
